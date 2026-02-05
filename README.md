@@ -123,6 +123,11 @@ cases:
 配置文件：`config/llm.yaml`（本地生效，不提交）
 示例文件：`config/llm.example.yaml`（仓库内公共模板）
 
+推荐用法（复制示例为本地配置）：
+```bash
+cp config/llm.example.yaml config/llm.yaml
+```
+
 常见字段：
 - `provider` 目前默认 `openai`
 - `enabled` 是否启用 LLM
