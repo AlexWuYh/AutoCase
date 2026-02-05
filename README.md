@@ -120,7 +120,8 @@ cases:
 
 **LLM 配置说明**
 
-配置文件：`config/llm.yaml`
+配置文件：`config/llm.yaml`（本地生效，不提交）
+示例文件：`config/llm.example.yaml`（仓库内公共模板）
 
 常见字段：
 - `provider` 目前默认 `openai`

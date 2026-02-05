@@ -1,4 +1,4 @@
-# LLM 参数配置（当前版本仅用于配置管理与后续集成）
+# LLM 参数配置（示例文件，复制为 llm.yaml 并按本地环境修改）
 provider: openai
 enabled: true
 api_key_env: OPENAI_API_KEY
