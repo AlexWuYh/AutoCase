@@ -1,7 +1,7 @@
 # AutoCase
 
 ![CI](https://github.com/AlexWuYh/AutoCase/actions/workflows/ci.yml/badge.svg)
-![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 
 AutoCase 是一个轻量、可扩展的“LLM 自动生成测试用例”工具，支持按固定 YAML 输入格式生成标准测试用例 Excel 表格。
