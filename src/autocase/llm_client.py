@@ -37,11 +37,9 @@ def generate_llm_cases(
         "再次提醒：只输出JSON数组，不要包含任何解释或其它文本。",
     )
 
-    last_text = ""
     for attempt in range(max_retries + 1):
         prompt = user_prompt if attempt == 0 else f"{user_prompt}\n\n{retry_suffix}"
         text = _call_model(client, model, llm_config, system_prompt, prompt)
-        last_text = text
         items = _parse_json_list(text)
         if items:
             return items
