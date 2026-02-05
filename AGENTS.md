@@ -14,7 +14,7 @@ AutoCase is a CLI tool that uses an LLM to generate standardized test cases from
 ## Inputs / Outputs
 - Default input directory: `inputs/`
 - Default output directory: `outputs/`
-- If `-o` is omitted, output is `{input}_testcases.xlsx` in `outputs/`.
+- If `-o` is omitted, output is `{input}_{timestamp}_testcases.xlsx` in `outputs/`.
 
 ## Configuration Files
 - LLM config: `config/llm.yaml`

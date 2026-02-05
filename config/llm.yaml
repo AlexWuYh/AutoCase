@@ -2,6 +2,7 @@
 provider: openai
 enabled: true
 api_key_env: OPENAI_API_KEY
+allow_empty_key: false
 base_url: ""
 api_mode: responses
 model: gpt-4.1-mini
@@ -17,3 +18,4 @@ retry_prompt_suffix: "再次提醒：只输出JSON数组，不要包含任何解
 extra:
   timeout_seconds: 60
   retries: 2
+debug_log: false

@@ -13,6 +13,8 @@ class CaseSpec:
     feature: str
     description: str
     keywords: List[str]
+    module_code: str = ""
+    source: str = ""
 
 
 _REQUIRED_KEYS = ["module", "feature", "description", "keywords"]

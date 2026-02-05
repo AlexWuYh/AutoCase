@@ -1,0 +1,8 @@
+.DS_Store
+.autocase_module_cache.json
+.venv/
+__pycache__/
+src/autocase/__pycache__/
+outputs/
+inputs/*.yaml
+!inputs/input.example.yaml

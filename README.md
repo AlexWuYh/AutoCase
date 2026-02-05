@@ -92,7 +92,9 @@ autocase -f input.example.yaml
 **输出规则**
 - 输入文件默认从 `inputs/` 目录读取
 - 输出文件默认写入 `outputs/` 目录
-- 当仅指定 `-f` 时，输出文件名为 `{输入文件名}_testcases.xlsx`
+- 当仅指定 `-f` 时，输出文件名为 `{输入文件名}_{时间戳}_testcases.xlsx`
+- 多文件未指定 `-o` 时，输出文件名为 `combined_{时间戳}_testcases.xlsx`
+- STDIN 未指定 `-o` 时，输出文件名为 `stdin_{时间戳}_testcases.xlsx`
 - 当指定 `-o` 时，使用用户自定义名称（相对路径默认落在 `outputs/`）
 - 当输出目录不存在时会自动创建
 
@@ -124,6 +126,7 @@ cases:
 - `provider` 目前默认 `openai`
 - `enabled` 是否启用 LLM
 - `api_key_env` API Key 环境变量名
+- `allow_empty_key` 允许不提供 API Key（仅适用于本地兼容服务）
 - `base_url` 本地 LLM 服务地址
 - `api_mode` `responses` 或 `chat_completions`
 - `model` 模型名称
@@ -131,12 +134,21 @@ cases:
 - `retry_count` JSON 解析失败重试次数
 - `retry_prompt_suffix` 重试时追加的提示
 
+可选环境变量（用于覆盖配置文件，便于本地/CI 不改仓库文件）：
+- `AUTOCASE_API_KEY_ENV` 覆盖 `api_key_env`
+- `AUTOCASE_ALLOW_EMPTY_KEY` 覆盖 `allow_empty_key`（true/false）
+- `AUTOCASE_BASE_URL` 覆盖 `base_url`
+- `AUTOCASE_API_MODE` 覆盖 `api_mode`
+- `AUTOCASE_MODEL` 覆盖 `model`
+- `AUTOCASE_DEBUG_LOG` 覆盖 `debug_log`（true/false）
+
 **系统级 Prompt**
 - 默认文件：`config/system_prompt.txt`
 - 你可以直接修改此文件来改变生成风格、覆盖范围与质量要求
 
 **本地 LLM 兼容**
 - 若本地服务仅支持 Chat Completions 风格接口，请在 `config/llm.yaml` 中设置 `api_mode: chat_completions` 并填写 `base_url`
+- 若本地服务不需要 API Key，可设置 `allow_empty_key: true`（同时将 `api_key_env` 置空或忽略）
 - 若 JSON 解析失败，可在 `config/llm.yaml` 中调整 `retry_count` 与 `retry_prompt_suffix`
 
 **JSON-only 输出**
@@ -156,13 +168,30 @@ autocase -f input.example.yaml
 autocase -f input.example.yaml -o my_cases.xlsx
 ```
 
+```bash
+# 传入多个文件（可重复 -f）
+autocase -f inputs/a.yaml -f inputs/b.yaml
+```
+
+```bash
+# 传入目录：自动加载该目录下所有 .yaml/.yml
+autocase -f inputs/subdir
+```
+
+```bash
+# 默认输出文件会带时间戳，避免覆盖
+autocase -f input.example.yaml
+```
+
 **输出格式**
 - 输出为 `.xlsx`，可直接导入用例管理系统
+- 用例ID前缀由大模型根据模块名称自动生成（例如 `ORG-0001`）
+- 用例名称会自动加上模块前缀（例如 `[机构场地] 新增场地主流程验证`）
 
 **常见问题**
 
 - 提示缺少依赖：请执行 `pip3 install -r requirements.txt`
-- 提示 API Key 未找到：请设置 `OPENAI_API_KEY` 或在 `config/llm.yaml` 修改 `api_key_env`
+- 提示 API Key 未找到：请设置 `OPENAI_API_KEY` 或在 `config/llm.yaml` 修改 `api_key_env` / `allow_empty_key`
 - 解析失败：检查输入 YAML 是否符合格式
 - 输入文件不存在：确认文件在 `inputs/` 目录或传入正确路径
 
