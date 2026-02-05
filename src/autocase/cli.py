@@ -58,12 +58,15 @@ def _print_banner() -> None:
  / ___ \\ |_| | || (_) | (_) | \\__ \\  __/
 /_/   \\_\\__,_|\\__\\___/ \\___/|_|___/\\___|
     """
+    meta = "Author: Yinghao Wu | GitHub: https://github.com/AlexWuYh/AutoCase"
     if sys.stdout.isatty():
         blue = "\033[94m"
         reset = "\033[0m"
         print(blue + banner + reset)
+        print(meta)
     else:
         print(banner)
+        print(meta)
 
 
 def _supports_color() -> bool:
@@ -175,6 +178,7 @@ def main() -> int:
     if len(sys.argv) == 1:
         _print_banner()
         parser.print_help()
+        print("Docs: https://github.com/AlexWuYh/AutoCase")
         return 0
 
     if not args.no_banner:
@@ -188,6 +192,10 @@ def main() -> int:
     start_ts = time.perf_counter()
     _log_header("AutoCase Run")
     _log_kv("Status", "start  🚀")
+    if input_paths:
+        _log_kv("Inputs", f"{len(input_paths)} file(s)")
+    else:
+        _log_kv("Inputs", "STDIN")
 
     output_dir = "outputs"
     for p in input_paths:
@@ -331,6 +339,7 @@ def main() -> int:
         elapsed = time.perf_counter() - start_ts
         _log_header("Result")
         _log_kv("Cases", f"{len(cases)} (JSON)")
+        _log_kv("Output", "JSON to STDOUT (no Excel)")
         _log_kv("Elapsed", f"{elapsed:.2f}s  ⏱️")
         _log_kv("Status", "done  ✅")
         print(json.dumps(cases_to_json(cases), ensure_ascii=False, indent=2))
