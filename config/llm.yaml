@@ -1,0 +1,19 @@
+# LLM 参数配置（当前版本仅用于配置管理与后续集成）
+provider: openai
+enabled: true
+api_key_env: OPENAI_API_KEY
+base_url: ""
+api_mode: responses
+model: gpt-4.1-mini
+temperature: 0.2
+max_tokens: 2000
+top_p: 1.0
+frequency_penalty: 0.0
+presence_penalty: 0.0
+# JSON 解析失败时的重试配置
+retry_count: 2
+retry_prompt_suffix: "再次提醒：只输出JSON数组，不要包含任何解释或其它文本。"
+# 可选：用于工具编排的附加参数
+extra:
+  timeout_seconds: 60
+  retries: 2
