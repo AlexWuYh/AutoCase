@@ -3,14 +3,14 @@ cases:
     feature: 机构场地管理-新增场地
     description: 支持管理员新增场地，包含名称、地址、容量；校验名称唯一；可保存成功或提示错误
     keywords:
-      - 金砖
-      - 睿镜
+      - 示例关键词A
+      - 示例关键词B
   - module: 系统设置 / 业务设置 / 机构场地
     feature: 机构场地管理-编辑场地
     description: 支持管理员编辑场地信息，包含名称、地址、容量；校验名称唯一
     keywords:
-      - 金砖
-      - 睿镜
+      - 示例关键词A
+      - 示例关键词B
   - module: 订单中心 / 退款管理
     feature: 退款申请-发起
     description: 用户发起退款申请，校验订单状态，生成退款单

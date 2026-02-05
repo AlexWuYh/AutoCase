@@ -5,5 +5,6 @@ __pycache__/
 src/autocase/__pycache__/
 outputs/
 inputs/*.yaml
+inputs/*.yml
 !inputs/input.example.yaml
 config/llm.yaml
