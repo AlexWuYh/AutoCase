@@ -3,7 +3,7 @@
 This document defines repository-specific guidance for AI agents working on this project.
 
 ## Project Overview
-AutoCase is a CLI tool that uses an LLM to generate standardized test cases from YAML input and outputs a formatted Excel file.
+AutoCase is a CLI tool that uses an LLM to generate standardized test cases from YAML input and outputs a formatted Excel/CSV file.
 
 ## Key Commands
 - Install (editable): `pip3 install -e .`
@@ -28,6 +28,7 @@ The LLM must return a JSON array of objects with these fields:
 - `pre`
 - `steps`
 - `expected`
+- `stage`
 
 The tool adds IDs, module, and keywords automatically.
 
@@ -44,5 +45,6 @@ There are no automated tests currently. Manual checks:
 ## Review Checklist
 - CLI flags work as documented.
 - Output Excel formatting remains intact.
+- CSV output works and columns are ordered correctly.
 - LLM config and prompt are loaded correctly.
 - Default input/output directory logic still works.

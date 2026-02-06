@@ -12,39 +12,51 @@ class TestCase:
     name: str
     priority: str
     preconditions: str
-    steps: str
-    expected: str
+    steps: List[str]
+    expected: List[str]
     keywords: str
+    stage: str
 
 
- 
+_ALLOWED_STAGES = [
+    "单元测试阶段",
+    "功能测试阶段",
+    "集成测试阶段",
+    "系统测试阶段",
+    "冒烟测试阶段",
+    "版本验证阶段",
+]
 
 
 def to_excel_rows(cases: List[TestCase]) -> List[List[str]]:
     headers = [
         "用例ID",
         "所属模块",
-        "用例类型",
         "用例名称",
-        "优先级",
         "前置条件",
-        "用例步骤",
-        "预期结果",
+        "步骤",
+        "预期",
         "关键词",
+        "优先级",
+        "用例类型",
+        "适用阶段",
     ]
     rows = [headers]
     for c in cases:
+        steps_text = "\n".join([f"{i + 1}. {s}" for i, s in enumerate(c.steps)])
+        expected_text = "\n".join([f"{i + 1}. {s}" for i, s in enumerate(c.expected)])
         rows.append(
             [
                 c.case_id,
                 c.module,
-                c.case_type,
                 c.name,
-                c.priority,
                 c.preconditions,
-                c.steps,
-                c.expected,
+                steps_text,
+                expected_text,
                 c.keywords,
+                c.priority,
+                c.case_type,
+                c.stage,
             ]
         )
     return rows
@@ -64,9 +76,25 @@ def cases_to_json(cases: List[TestCase]) -> List[Dict[str, Any]]:
                 "steps": c.steps,
                 "expected": c.expected,
                 "keywords": c.keywords,
+                "stage": c.stage,
             }
         )
     return data
+
+
+def _normalize_list(value: Any) -> List[str]:
+    if isinstance(value, list):
+        return [str(v).strip() for v in value if str(v).strip()]
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return []
+        if "\n" in text:
+            return [line.strip() for line in text.splitlines() if line.strip()]
+        return [text]
+    if value is None:
+        return []
+    return [str(value).strip()]
 
 
 def llm_items_to_cases(
@@ -80,11 +108,21 @@ def llm_items_to_cases(
         type_value = item.get("type", [])
         if isinstance(type_value, list):
             type_value = ", ".join(type_value)
-        steps = item.get("steps", [])
-        if isinstance(steps, list):
-            steps_text = "\n".join([f"{i + 1}. {s}" for i, s in enumerate(steps)])
-        else:
-            steps_text = str(steps)
+        raw_steps = item.get("steps", [])
+        steps_list = _normalize_list(raw_steps)
+        if len(steps_list) > 4:
+            steps_list = steps_list[:4]
+        raw_expected = item.get("expected", [])
+        expected_list = _normalize_list(raw_expected)
+        if len(expected_list) < len(steps_list):
+            expected_list += [""] * (len(steps_list) - len(expected_list))
+        elif len(expected_list) > len(steps_list):
+            expected_list = expected_list[: len(steps_list)]
+
+        stage_value = item.get("stage", item.get("适用阶段", ""))
+        stage_text = str(stage_value).strip()
+        if stage_text not in _ALLOWED_STAGES:
+            stage_text = "功能测试阶段"
         cases.append(
             TestCase(
                 case_id=f"CS-{next_index:04d}",
@@ -93,9 +131,10 @@ def llm_items_to_cases(
                 name=str(item.get("name", "")),
                 priority=str(item.get("priority", "P2")),
                 preconditions=str(item.get("pre", "")),
-                steps=steps_text,
-                expected=str(item.get("expected", "")),
+                steps=steps_list,
+                expected=expected_list,
                 keywords=", ".join(spec.keywords),
+                stage=stage_text,
             )
         )
         next_index += 1
