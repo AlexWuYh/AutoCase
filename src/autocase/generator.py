@@ -134,7 +134,7 @@ def llm_items_to_cases(
                 module=spec.module,
                 case_type=str(type_value),
                 name=name,
-                priority=str(item.get("priority", "P2")),
+                priority=str(item.get("priority", "2")),
                 preconditions=str(item.get("pre", "")),
                 steps=steps_list,
                 expected=expected_list,

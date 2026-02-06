@@ -83,7 +83,7 @@ def _build_user_prompt(spec: CaseSpec) -> str:
         "输出 JSON 数组元素字段：\n"
         "- type: 用例类型（数组或字符串）\n"
         "- name: 用例名称\n"
-        "- priority: P0/P1/P2/P3\n"
+        "- priority: 1/2/3/4（1最高，4最低）\n"
         "- pre: 前置条件\n"
         "- steps: 步骤数组（最多4步）\n"
         "- expected: 预期结果数组（与步骤严格一一对应）\n"
