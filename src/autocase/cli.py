@@ -1,4 +1,5 @@
 import argparse
+import csv
 import json
 import os
 import sys
@@ -140,7 +141,7 @@ def _save_module_cache(path: str, data: dict) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="AutoCase - 生成标准测试用例表格(Excel)")
+    parser = argparse.ArgumentParser(description="AutoCase - 生成标准测试用例表格(Excel/CSV)")
     parser.add_argument(
         "-f",
         "--file",
@@ -161,7 +162,7 @@ def main() -> int:
         "-o",
         "--output",
         default="output.xlsx",
-        help="输出Excel文件路径",
+        help="输出文件路径（支持 .xlsx 或 .csv，默认 .xlsx）",
     )
     parser.add_argument(
         "--no-banner",
@@ -345,10 +346,6 @@ def main() -> int:
         print(json.dumps(cases_to_json(cases), ensure_ascii=False, indent=2))
         return 0
 
-    if openpyxl is None:
-        print("缺少依赖: openpyxl，请先安装依赖", file=sys.stderr)
-        return 2
-
     output_parent = os.path.dirname(output_path)
     if output_parent:
         os.makedirs(output_parent, exist_ok=True)
@@ -356,6 +353,17 @@ def main() -> int:
     _log_header("Output")
     _log_kv("Write", output_path)
     rows = to_excel_rows(cases)
+    output_ext = os.path.splitext(output_path)[1].lower()
+    if output_ext == ".csv":
+        with open(output_path, "w", encoding="utf-8-sig", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(rows)
+        print(f"已生成: {output_path}")
+        return 0
+
+    if openpyxl is None:
+        print("缺少依赖: openpyxl，请先安装依赖", file=sys.stderr)
+        return 2
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "TestCases"
