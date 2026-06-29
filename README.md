@@ -2,25 +2,87 @@
 
 ![CI](https://github.com/AlexWuYh/AutoCase/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 
-AutoCase 是一个轻量、可扩展的“LLM 自动生成测试用例”工具，支持按固定 YAML 输入格式生成标准测试用例 Excel/CSV 表格。
+AutoCase 是一个 LLM 自动生成测试用例的工具平台。
+
+**两种使用模式**
+
+- **CLI 模式**：读取 YAML 输入，调用 LLM 生成标准 Excel/CSV/JSON 测试用例（原始功能，向后兼容）
+- **Web 平台**（`feat/web-platform` 分支）：基于 Docker 的在线平台，支持需求集管理、账号体系、异步任务、可视化界面
 
 **核心特性**
-- 基于 YAML 输入的批量功能点解析
+- 基于 YAML / Web 表单的批量功能点解析
 - 直接调用 LLM 生成测试用例
 - 输出美化后的 Excel（含表头样式、斑马纹、冻结首行、自动筛选），也支持 CSV
 - 适配本地 LLM（通过 `base_url` 与 `api_mode`）
+- Web 平台：账号管理、需求 CRUD、配置管理、任务进度跟踪
 
 **项目结构**
 - `src/autocase/cli.py` 命令行入口
 - `src/autocase/llm_client.py` LLM 调用与重试逻辑
 - `src/autocase/generator.py` 用例结构转换与输出
 - `src/autocase/parser.py` YAML 解析
+- `backend/` Web 平台后端 (FastAPI)
+- `frontend/` Web 平台前端 (Vue 3)
+- `docker-compose.yml` Web 平台一键部署
 - `config/llm.yaml` 大模型参数配置
 - `config/system_prompt.txt` 系统级 prompt
 - `inputs/` 默认输入目录
 - `outputs/` 默认输出目录
+
+## Web 平台（Docker 部署）
+
+> 该功能在 `feat/web-platform` 分支开发，阶段 1-6 陆续交付。
+
+**快速启动**
+
+1. 准备环境配置
+```bash
+cp .env.example .env
+# 编辑 .env 至少修改 SECRET_KEY 和 INITIAL_ADMIN_PASSWORD
+```
+
+2. 一键启动
+```bash
+docker compose up -d --build
+```
+
+3. 访问 `http://localhost:8080`，使用初始管理员账号登录
+   - 默认用户名/密码：`admin` / `admin123`（**首次登录后请立即修改**）
+
+**服务端口**
+- 前端 (nginx): `http://localhost:8080`
+- 后端 API: `http://localhost:8000` (Swagger 文档: `/api/docs`)
+- Redis: `localhost:6379`
+
+**Web 平台功能（按交付阶段）**
+- 阶段 1（已完成）：基础设施、Docker 部署、登录页骨架
+- 阶段 2：JWT 认证、用户管理
+- 阶段 3：需求集 + 功能点 CRUD + YAML 导入导出
+- 阶段 4：LLM 配置 + Prompt 模板管理
+- 阶段 5：异步生成任务（Celery）
+- 阶段 6：Excel/CSV 导出 + 测试 + 文档
+
+**本地开发（不用 Docker）**
+
+后端：
+```bash
+# 根目录安装 CLI 核心
+pip install -e .
+
+# 后端
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+前端：
+```bash
+cd frontend
+npm install
+npm run dev   # http://localhost:5173
+```
 
 **安装部署**
 

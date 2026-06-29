@@ -1,9 +1,11 @@
 ## 项目信息
 - 项目名称: AutoCase
-- 项目类型: CLI 工具
-- 主要语言: Python
+- 项目类型: CLI 工具 + Web 平台 (Docker 部署)
+- 主要语言: Python (后端 / CLI 核心) + TypeScript (前端)
+- 分支: `main` (CLI 稳定版) / `feat/web-platform` (Web 平台开发)
 
 ## 常用命令
+### CLI 模式
 ```bash
 # 安装依赖
 pip3 install -r requirements.txt
@@ -25,6 +27,43 @@ autocase -f input.example.yaml
 autocase -f input.example.yaml -o my_cases.xlsx
 
 autocase -f input.example.yaml --json-only > output.json
+```
+
+### Web 平台 (Docker)
+```bash
+# 初始化环境配置
+cp .env.example .env
+# 编辑 .env 至少修改 SECRET_KEY 和 INITIAL_ADMIN_PASSWORD
+
+# 一键启动 (后台)
+docker compose up -d --build
+
+# 查看日志
+docker compose logs -f backend
+docker compose logs -f worker
+
+# 停止
+docker compose down
+
+# 清理数据 (删除 SQLite / Redis volume)
+docker compose down -v
+```
+
+### Web 后端 (本地开发)
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+# 先在项目根 pip install -e . 安装 CLI 核心
+uvicorn app.main:app --reload --port 8000
+```
+
+### Web 前端 (本地开发)
+```bash
+cd frontend
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # 构建到 dist/
 ```
 
 ## 命名规范
@@ -49,6 +88,8 @@ AutoCase/
 - Makefile
 - install.sh
 - uninstall.sh
+- docker-compose.yml
+- .env.example
 - requirements.txt
 - pyproject.toml
 - config/
@@ -57,13 +98,43 @@ AutoCase/
 - inputs/
   - input.example.yaml
 - outputs/
-- src/
+- src/                       # CLI 核心 (被 Web 后端复用)
   - autocase/
     - __init__.py
     - cli.py
     - generator.py
     - llm_client.py
     - parser.py
+- backend/                   # Web 后端 (FastAPI)
+  - app/
+    - main.py
+    - config.py
+    - database.py
+    - celery_app.py
+    - security.py
+    - models/
+    - schemas/
+    - api/v1/
+    - services/
+    - tasks/
+  - tests/
+  - requirements.txt
+  - pyproject.toml
+  - Dockerfile
+- frontend/                  # Web 前端 (Vue 3)
+  - src/
+    - main.ts
+    - App.vue
+    - router/
+    - stores/
+    - views/
+    - components/
+    - utils/
+  - package.json
+  - vite.config.ts
+  - tsconfig.json
+  - Dockerfile
+  - nginx.conf
 ```
 
 ## 代码复用
@@ -73,6 +144,8 @@ IMPORTANT: 禁止重复实现已有功能
 - 简单条件判断 → 不必过度抽象
 - 新建文件前 → 先搜索是否已有类似功能
 - 公共模块禁止依赖业务模块，避免循环依赖
+- **Web 后端必须复用 CLI 核心** (`src/autocase/`): LLM 调用、YAML 解析、用例组装逻辑禁止重复实现
+- **Web 后端需要 CLI 核心时**: 通过 `from autocase.parser import ...` 引入，前提是 `pip install -e .` 或 `pip install /tmp/cli_src/`
 
 ## 代码健壮性
 ### 错误处理
@@ -165,10 +238,25 @@ IMPORTANT: 根本解决问题
 - 缺失输入文件时: 必须给出清晰错误提示
 
 ## 语言/框架特定规则
+### Python
 - 遵循 PEP8
 - 使用类型提示
 - 禁止裸 except
 - 使用 f-string 格式化
+
+### TypeScript / Vue 3
+- 启用 `strict: true` (tsconfig.json)
+- 组件使用 `<script setup lang="ts">`
+- 状态管理统一走 Pinia store
+- HTTP 请求统一用 `src/utils/request.ts` (已带 JWT 拦截器)
+- Element Plus 按需自动导入 (unplugin-vue-components)
+- 组件名 PascalCase，文件名 PascalCase.vue
+
+### Docker / 部署
+- 服务端口约定: frontend=8080, backend=8000, redis=6379
+- 容器之间通过服务名访问 (例如 backend 容器访问 redis://redis:6379)
+- 数据持久化: SQLite 走 `./data/` 目录挂载
+- 敏感信息 (.env) 不入仓
 
 ## 格式要求
 推荐使用:

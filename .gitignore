@@ -3,8 +3,25 @@
 .venv/
 __pycache__/
 src/autocase/__pycache__/
+src/autocase.egg-info/
+backend/app/**/__pycache__/
+backend/.pytest_cache/
+backend/data/
+backend/uploads/
 outputs/
 inputs/*.yaml
 inputs/*.yml
 !inputs/input.example.yaml
 config/llm.yaml
+
+# Web platform
+data/
+uploads/
+.env
+.env.local
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+*.log
+.idea/
+.vscode/
