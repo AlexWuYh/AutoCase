@@ -6,6 +6,7 @@ from .jobs import router as jobs_router
 from .llm_configs import router as llm_configs_router
 from .prompts import router as prompts_router
 from .requirements import router as requirements_router
+from .system import router as system_router
 from .users import router as users_router
 
 router = APIRouter()
@@ -18,3 +19,4 @@ router.include_router(
 router.include_router(llm_configs_router, prefix="/llm-configs", tags=["llm-configs"])
 router.include_router(prompts_router, prefix="/system-prompts", tags=["system-prompts"])
 router.include_router(jobs_router, prefix="/jobs", tags=["jobs"])
+router.include_router(system_router, prefix="/system", tags=["system"])
