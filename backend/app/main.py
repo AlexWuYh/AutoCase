@@ -9,7 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .config import get_settings
-from .database import Base, engine
+from .database import Base, SessionLocal, engine
+from .seed import run_all_seeds
 
 settings = get_settings()
 logger = logging.getLogger("autocase")
@@ -21,11 +22,16 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    """Application lifespan: create tables on startup (Alembic is the source of truth in prod)."""
+    """Application lifespan: create tables + run idempotent seeds on startup."""
     logger.info("Starting %s v%s", settings.app_name, settings.app_version)
     # Import models so Base.metadata is populated
     from . import models  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    # Run first-run seeds (e.g. initial admin user)
+    with SessionLocal() as db:
+        run_all_seeds(db)
+
     yield
     logger.info("Shutting down")
 
@@ -64,7 +70,7 @@ def version() -> dict:
     return {"version": settings.app_version}
 
 
-# API v1 router will be included here once routes are added in later phases.
+# API v1 router
 from .api.v1 import router as v1_router  # noqa: E402
 
 app.include_router(v1_router, prefix=settings.api_prefix)

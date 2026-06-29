@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # Initial admin (created on first run if no users exist)
     initial_admin_username: str = "admin"
     initial_admin_password: str = "admin123"
-    initial_admin_email: str = "admin@autocase.local"
+    initial_admin_email: str = "admin@autocase.example"
 
     # Celery
     celery_broker_url: str = "redis://redis:6379/0"

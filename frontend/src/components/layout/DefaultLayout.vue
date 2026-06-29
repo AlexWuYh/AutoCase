@@ -13,6 +13,10 @@
           <el-icon><DataLine /></el-icon>
           <span>概览</span>
         </el-menu-item>
+        <el-menu-item v-if="auth.isAdmin" index="/users">
+          <el-icon><User /></el-icon>
+          <span>用户管理</span>
+        </el-menu-item>
         <!-- Additional menu items will be added in later phases -->
       </el-menu>
     </el-aside>
@@ -23,11 +27,19 @@
           <span class="user-trigger">
             <el-icon><UserFilled /></el-icon>
             {{ auth.user?.username || '用户' }}
+            <el-tag
+              v-if="auth.isAdmin"
+              size="small"
+              type="danger"
+              effect="dark"
+              style="margin-left: 4px"
+            >管理员</el-tag>
             <el-icon><ArrowDown /></el-icon>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+              <el-dropdown-item @click="router.push('/profile')">个人中心</el-dropdown-item>
+              <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -40,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -57,6 +69,13 @@ function onCommand(cmd: string) {
     router.push('/login')
   }
 }
+
+onMounted(() => {
+  // Refetch profile in case token is valid but user info is missing
+  if (auth.isAuthenticated && !auth.user) {
+    auth.fetchMe().catch(() => auth.logout())
+  }
+})
 </script>
 
 <style scoped>

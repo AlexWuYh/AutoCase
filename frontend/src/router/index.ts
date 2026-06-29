@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -18,6 +19,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/DashboardView.vue'),
         meta: { title: '概览' },
       },
+      {
+        path: 'users',
+        name: 'users',
+        component: () => import('@/views/UserListView.vue'),
+        meta: { title: '用户管理', requiresAdmin: true },
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('@/views/ProfileView.vue'),
+        meta: { title: '个人中心' },
+      },
       // Feature routes will be added in later phases.
     ],
   },
@@ -32,13 +45,16 @@ const router = createRouter({
   routes,
 })
 
-// Auth guard
+// Auth + role guard
 router.beforeEach((to) => {
-  const token = localStorage.getItem('access_token')
-  if (!to.meta.public && !token) {
+  const auth = useAuthStore()
+  if (!to.meta.public && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
-  if (to.name === 'login' && token) {
+  if (to.name === 'login' && auth.isAuthenticated) {
+    return { name: 'dashboard' }
+  }
+  if (to.meta.requiresAdmin && !auth.isAdmin) {
     return { name: 'dashboard' }
   }
 })

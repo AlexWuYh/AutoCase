@@ -8,36 +8,45 @@
         </div>
       </template>
 
-      <el-alert
-        v-if="phase1Notice"
-        type="info"
-        :closable="false"
-        title="阶段 1 占位"
-        description="认证功能将在阶段 2 完成。当前为前端骨架预览。"
-        style="margin-bottom: 16px"
-      />
-
-      <el-form :model="form" label-width="80px" @submit.prevent>
-        <el-form-item label="用户名">
-          <el-input v-model="form.username" placeholder="请输入用户名" />
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-width="80px"
+        @submit.prevent="onSubmit"
+      >
+        <el-form-item label="用户名" prop="username">
+          <el-input
+            v-model="form.username"
+            placeholder="请输入用户名"
+            :prefix-icon="User"
+            autofocus
+          />
         </el-form-item>
-        <el-form-item label="密码">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="form.password"
             type="password"
             placeholder="请输入密码"
+            :prefix-icon="Lock"
             show-password
+            @keyup.enter="onSubmit"
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :loading="loading" @click="onSubmit" style="width: 100%">
+          <el-button
+            type="primary"
+            :loading="loading"
+            style="width: 100%"
+            @click="onSubmit"
+          >
             登录
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="login-tips">
-        默认管理员账号将在阶段 2 启动时自动创建
+        默认管理员: <code>admin</code> / <code>admin123</code> (首次登录后请立即修改)
       </div>
     </el-card>
   </div>
@@ -45,21 +54,41 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
-const loading = ref(false)
-const phase1Notice = ref(true)
+const route = useRoute()
+const auth = useAuthStore()
 
+const formRef = ref<FormInstance>()
+const loading = ref(false)
 const form = reactive({ username: '', password: '' })
 
+const rules: FormRules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+}
+
 async function onSubmit() {
-  // Phase 1: just navigate to dashboard to show the layout works.
+  if (!formRef.value) return
+  const valid = await formRef.value.validate().catch(() => false)
+  if (!valid) return
+
   loading.value = true
-  setTimeout(() => {
+  try {
+    await auth.login(form.username, form.password)
+    ElMessage.success('登录成功')
+    const redirect = (route.query.redirect as string) || '/dashboard'
+    router.push(redirect)
+  } catch (e: unknown) {
+    const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+    ElMessage.error(msg || '登录失败')
+  } finally {
     loading.value = false
-    router.push('/dashboard')
-  }, 400)
+  }
 }
 </script>
 
@@ -76,4 +105,5 @@ async function onSubmit() {
 .login-header h2 { margin: 0 0 8px; color: #303133; }
 .login-header p { margin: 0; color: #909399; font-size: 13px; }
 .login-tips { text-align: center; color: #909399; font-size: 12px; margin-top: 12px; }
+.login-tips code { background: #f5f7fa; padding: 1px 6px; border-radius: 3px; }
 </style>

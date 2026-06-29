@@ -1,33 +1,59 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { authApi, type UserInfo } from '@/api/auth'
 
-interface UserInfo {
-  id: number
-  username: string
-  email: string
-  role: 'admin' | 'user'
-}
+const ACCESS_KEY = 'access_token'
+const REFRESH_KEY = 'refresh_token'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<UserInfo | null>(null)
-  const isAuthenticated = ref(false)
+  const accessToken = ref<string | null>(localStorage.getItem(ACCESS_KEY))
+  const refreshToken = ref<string | null>(localStorage.getItem(REFRESH_KEY))
+
+  const isAuthenticated = computed(() => !!accessToken.value)
+  const isAdmin = computed(() => user.value?.role === 'admin')
 
   function setTokens(access: string, refresh: string) {
-    localStorage.setItem('access_token', access)
-    localStorage.setItem('refresh_token', refresh)
-    isAuthenticated.value = true
+    localStorage.setItem(ACCESS_KEY, access)
+    localStorage.setItem(REFRESH_KEY, refresh)
+    accessToken.value = access
+    refreshToken.value = refresh
   }
 
   function setUser(u: UserInfo) {
     user.value = u
   }
 
-  function logout() {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    user.value = null
-    isAuthenticated.value = false
+  async function login(username: string, password: string) {
+    const { data } = await authApi.login({ username, password })
+    setTokens(data.access_token, data.refresh_token)
+    await fetchMe()
   }
 
-  return { user, isAuthenticated, setTokens, setUser, logout }
+  async function fetchMe() {
+    if (!accessToken.value) return
+    const { data } = await authApi.me()
+    setUser(data)
+  }
+
+  function logout() {
+    localStorage.removeItem(ACCESS_KEY)
+    localStorage.removeItem(REFRESH_KEY)
+    accessToken.value = null
+    refreshToken.value = null
+    user.value = null
+  }
+
+  return {
+    user,
+    accessToken,
+    refreshToken,
+    isAuthenticated,
+    isAdmin,
+    setTokens,
+    setUser,
+    login,
+    fetchMe,
+    logout,
+  }
 })
