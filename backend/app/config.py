@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     initial_admin_email: str = "admin@autocase.example"
 
     # Celery
+    # Celery (max_upload_size_mb stays)
+    max_upload_size_mb: int = 10
+
+    # Celery (task-level overrides)
+    celery_task_time_limit: int = 600
+    celery_task_soft_time_limit: int = 540
     celery_broker_url: str = "redis://redis:6379/0"
     celery_result_backend: str = "redis://redis:6379/1"
 

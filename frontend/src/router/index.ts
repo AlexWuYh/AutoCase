@@ -55,6 +55,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/configs/PromptListView.vue'),
         meta: { title: 'Prompt 模板', requiresAdmin: true },
       },
+      {
+        path: 'jobs',
+        name: 'jobs',
+        component: () => import('@/views/JobListView.vue'),
+        meta: { title: '生成任务' },
+      },
       // Feature routes will be added in later phases.
     ],
   },

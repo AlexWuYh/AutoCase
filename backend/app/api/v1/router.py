@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 
 from .auth import router as auth_router
+from .jobs import router as jobs_router
 from .llm_configs import router as llm_configs_router
 from .prompts import router as prompts_router
 from .requirements import router as requirements_router
@@ -16,3 +17,4 @@ router.include_router(
 )
 router.include_router(llm_configs_router, prefix="/llm-configs", tags=["llm-configs"])
 router.include_router(prompts_router, prefix="/system-prompts", tags=["system-prompts"])
+router.include_router(jobs_router, prefix="/jobs", tags=["jobs"])
