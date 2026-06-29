@@ -17,6 +17,14 @@
           <el-icon><Document /></el-icon>
           <span>需求集</span>
         </el-menu-item>
+        <el-menu-item v-if="auth.isAdmin" index="/llm-configs">
+          <el-icon><Setting /></el-icon>
+          <span>LLM 配置</span>
+        </el-menu-item>
+        <el-menu-item v-if="auth.isAdmin" index="/prompts">
+          <el-icon><EditPen /></el-icon>
+          <span>Prompt 模板</span>
+        </el-menu-item>
         <el-menu-item v-if="auth.isAdmin" index="/users">
           <el-icon><User /></el-icon>
           <span>用户管理</span>

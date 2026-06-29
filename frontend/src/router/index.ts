@@ -43,6 +43,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/requirements/GroupDetailView.vue'),
         meta: { title: '需求集详情' },
       },
+      {
+        path: 'llm-configs',
+        name: 'llm-configs',
+        component: () => import('@/views/configs/LLMConfigListView.vue'),
+        meta: { title: 'LLM 配置', requiresAdmin: true },
+      },
+      {
+        path: 'prompts',
+        name: 'prompts',
+        component: () => import('@/views/configs/PromptListView.vue'),
+        meta: { title: 'Prompt 模板', requiresAdmin: true },
+      },
       // Feature routes will be added in later phases.
     ],
   },
