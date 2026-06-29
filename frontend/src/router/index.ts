@@ -31,6 +31,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/ProfileView.vue'),
         meta: { title: '个人中心' },
       },
+      {
+        path: 'requirement-groups',
+        name: 'requirement-groups',
+        component: () => import('@/views/requirements/GroupListView.vue'),
+        meta: { title: '需求集管理' },
+      },
+      {
+        path: 'requirement-groups/:id',
+        name: 'requirement-group-detail',
+        component: () => import('@/views/requirements/GroupDetailView.vue'),
+        meta: { title: '需求集详情' },
+      },
       // Feature routes will be added in later phases.
     ],
   },
