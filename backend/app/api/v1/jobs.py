@@ -193,9 +193,13 @@ def export_job(
     wrap = Alignment(wrap_text=True, vertical="top")
     for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
         for cell in row:
-            cell.alignment = wrap; cell.border = bdr
-            if cell.row == 1: cell.fill = header_fill; cell.font = header_font
-            elif cell.row % 2 == 0: cell.fill = PatternFill("solid", fgColor="F8FAFC")
+            cell.alignment = wrap
+            cell.border = bdr
+            if cell.row == 1:
+                cell.fill = header_fill
+                cell.font = header_font
+            elif cell.row % 2 == 0:
+                cell.fill = PatternFill("solid", fgColor="F8FAFC")
     ws.freeze_panes = "A2"
     ws.auto_filter.ref = ws.dimensions
     for col in ws.columns:

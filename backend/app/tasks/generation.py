@@ -7,7 +7,7 @@ from datetime import datetime
 from celery import shared_task
 
 from ..config import get_settings
-from ..database import Engine, SessionLocal, session_scope
+from ..database import session_scope
 from ..models.case import GeneratedCase
 from ..models.job import GenerationJob
 from ..models.llm_config import LLMConfig

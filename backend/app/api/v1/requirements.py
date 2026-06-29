@@ -20,7 +20,6 @@ from ...schemas.requirement import (
     GroupUpdate,
     ImportResult,
     RequirementBatchCreate,
-    RequirementCreate,
     RequirementOut,
     RequirementUpdate,
 )
@@ -28,6 +27,7 @@ from ...services.yaml_service import (
     parse_yaml_to_specs,
     render_group_to_yaml,
 )
+from ...config import get_settings
 
 router = APIRouter()
 
@@ -343,6 +343,8 @@ async def import_yaml(
     """Import requirements from a YAML file or raw text body.
 
     Provide exactly one of `file` (multipart) or `text` (form field).
+    File uploads are limited by FastAPI/uvicorn's default multipart limits;
+    further size enforcement uses settings.max_upload_size_mb.
     """
     group = _get_group_or_404(db, group_id, current_user, modify=True)
 
@@ -351,10 +353,18 @@ async def import_yaml(
     if file is None and text is None:
         raise HTTPException(status_code=400, detail="必须提供 file 或 text")
 
+    max_bytes = get_settings().max_upload_size_mb * 1024 * 1024
+
     if file is not None:
-        raw = (await file.read()).decode("utf-8", errors="replace")
+        raw_bytes = await file.read()
+        if len(raw_bytes) > max_bytes:
+            raise HTTPException(
+                status_code=400,
+                detail=f"YAML 文件过大，最大允许 {get_settings().max_upload_size_mb}MB",
+            )
+        raw = raw_bytes.decode("utf-8", errors="replace")
     else:
-        raw = text or ""
+        raw = (text or "")[:max_bytes]
 
     try:
         specs = parse_yaml_to_specs(raw)
@@ -362,7 +372,7 @@ async def import_yaml(
         raise HTTPException(status_code=400, detail=f"YAML 解析失败: {e}")
 
     if mode == "replace":
-        deleted = db.query(Requirement).filter(Requirement.group_id == group.id).delete()
+        db.query(Requirement).filter(Requirement.group_id == group.id).delete()
         db.flush()
         base_order = 0
     else:

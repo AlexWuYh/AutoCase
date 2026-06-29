@@ -11,6 +11,7 @@ from ...database import get_db
 from ...deps import require_admin
 from ...models.llm_config import LLMConfig
 from ...models.user import User
+from ...schemas.common import PageResponse
 from ...schemas.llm_config import (
     LLMConfigCreate,
     LLMConfigOut,
@@ -18,9 +19,7 @@ from ...schemas.llm_config import (
     LLMConfigTestResult,
     LLMConfigUpdate,
 )
-from ...schemas.common import PageResponse
 from ...services.llm_service import test_llm_connection
-from ...config import get_settings
 
 router = APIRouter()
 

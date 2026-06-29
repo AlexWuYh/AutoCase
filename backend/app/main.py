@@ -24,6 +24,13 @@ logging.basicConfig(
 async def lifespan(_app: FastAPI):
     """Application lifespan: create tables + run idempotent seeds on startup."""
     logger.info("Starting %s v%s", settings.app_name, settings.app_version)
+
+    # Security warnings for default credentials
+    if "change-me" in settings.secret_key.lower() or len(settings.secret_key) < 32:
+        logger.warning("⚠ SECRET_KEY is too short or is the default placeholder. Generate a strong random key and set it via env!")
+    if settings.initial_admin_password == "admin123":
+        logger.warning("⚠ INITIAL_ADMIN_PASSWORD is the default 'admin123'. Change it before exposing this service!")
+
     # Import models so Base.metadata is populated
     from . import models  # noqa: F401
     Base.metadata.create_all(bind=engine)

@@ -15,7 +15,6 @@ os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["SECRET_KEY"] = "test-secret-key-that-is-long-enough-to-pass"
 os.environ["INITIAL_ADMIN_PASSWORD"] = "testadmin123"
 
-from app.config import get_settings  # noqa: E402
 from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.user import User, UserRole  # noqa: E402

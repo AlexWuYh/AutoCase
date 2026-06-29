@@ -12,7 +12,6 @@ from ...deps import get_current_user
 from ...models.job import GenerationJob
 from ...models.llm_config import LLMConfig
 from ...models.prompt import SystemPrompt
-from ...models.requirement import Requirement
 from ...models.requirement_group import RequirementGroup
 from ...models.user import User
 
