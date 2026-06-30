@@ -40,6 +40,7 @@ def _to_config_dict(cfg: LLMConfig) -> dict:
         "presence_penalty": cfg.presence_penalty,
         "retry_count": cfg.retry_count,
         "debug_log": cfg.debug_log,
+        "extra_body": cfg.extra_body,
     }
 
 

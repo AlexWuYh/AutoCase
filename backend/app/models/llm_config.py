@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, Integer, String
+from sqlalchemy import Boolean, DateTime, Float, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
@@ -28,6 +28,9 @@ class LLMConfig(Base):
     presence_penalty: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=2)
     debug_log: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Provider-specific options passed through to the API (e.g. for reasoning
+    # models: {"chat_template_kwargs": {"enable_thinking": false}})
+    extra_body: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(

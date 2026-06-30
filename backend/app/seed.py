@@ -75,6 +75,7 @@ def seed_default_llm_config(db: Session) -> Optional[LLMConfig]:
         presence_penalty=float(raw.get("presence_penalty", 0.0)),
         retry_count=int(raw.get("retry_count", 2)),
         debug_log=bool(raw.get("debug_log", False)),
+        extra_body=raw.get("extra_body") or None,
     )
     db.add(cfg)
     db.commit()

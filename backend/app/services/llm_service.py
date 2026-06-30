@@ -39,23 +39,30 @@ def test_llm_connection(config: Dict[str, Any], test_message: str = "Say OK") ->
     client = OpenAI(**client_kwargs)
     model = config.get("model", "gpt-4o-mini")
     api_mode = config.get("api_mode", "chat_completions")
+    extra_body = config.get("extra_body") or None
 
     start = time.perf_counter()
     if api_mode == "chat_completions":
-        response = client.chat.completions.create(
+        kwargs = dict(
             model=model,
             messages=[{"role": "user", "content": test_message}],
             temperature=0.0,
             max_tokens=50,
         )
+        if extra_body:
+            kwargs["extra_body"] = extra_body
+        response = client.chat.completions.create(**kwargs)
         reply = response.choices[0].message.content or ""
     else:
-        response = client.responses.create(
+        kwargs = dict(
             model=model,
             input=test_message,
             temperature=0.0,
             max_output_tokens=50,
         )
+        if extra_body:
+            kwargs["extra_body"] = extra_body
+        response = client.responses.create(**kwargs)
         if hasattr(response, "output_text"):
             reply = response.output_text or ""
         else:

@@ -78,6 +78,7 @@ def generate_job(self, job_id: int) -> dict:
             "presence_penalty": llm_row.presence_penalty,
             "retry_count": llm_row.retry_count,
             "debug_log": llm_row.debug_log,
+            "extra_body": llm_row.extra_body,
         }
 
         # Resolve system prompt

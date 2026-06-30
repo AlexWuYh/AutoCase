@@ -100,8 +100,12 @@ def _call_model(
     user_prompt: str,
 ) -> str:
     api_mode = os.getenv("AUTOCASE_API_MODE", llm_config.get("api_mode", "responses"))
+    # extra_body lets callers pass provider-specific options. For reasoning
+    # models (e.g. Qwen3), pass {"chat_template_kwargs": {"enable_thinking": false}}
+    # to disable chain-of-thought so the JSON array is not truncated.
+    extra_body = llm_config.get("extra_body") or None
     if api_mode == "chat_completions":
-        response = client.chat.completions.create(
+        kwargs = dict(
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -113,8 +117,11 @@ def _call_model(
             frequency_penalty=llm_config.get("frequency_penalty", 0.0),
             presence_penalty=llm_config.get("presence_penalty", 0.0),
         )
+        if extra_body:
+            kwargs["extra_body"] = extra_body
+        response = client.chat.completions.create(**kwargs)
         return _extract_chat_text(response)
-    response = client.responses.create(
+    kwargs = dict(
         model=model,
         instructions=system_prompt,
         input=user_prompt,
@@ -124,6 +131,9 @@ def _call_model(
         frequency_penalty=llm_config.get("frequency_penalty", 0.0),
         presence_penalty=llm_config.get("presence_penalty", 0.0),
     )
+    if extra_body:
+        kwargs["extra_body"] = extra_body
+    response = client.responses.create(**kwargs)
     return _extract_text(response)
 
 

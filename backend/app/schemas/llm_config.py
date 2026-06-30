@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -25,6 +25,10 @@ class LLMConfigBase(BaseModel):
     presence_penalty: float = Field(ge=-2.0, le=2.0, default=0.0)
     retry_count: int = Field(ge=0, le=10, default=2)
     debug_log: bool = False
+    extra_body: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description='透传给 API 的额外参数，如推理模型禁用思维链: {"chat_template_kwargs": {"enable_thinking": false}}',
+    )
     is_default: bool = False
 
 
@@ -49,6 +53,7 @@ class LLMConfigUpdate(BaseModel):
     presence_penalty: Optional[float] = Field(default=None, ge=-2.0, le=2.0)
     retry_count: Optional[int] = Field(default=None, ge=0, le=10)
     debug_log: Optional[bool] = None
+    extra_body: Optional[Dict[str, Any]] = None
     is_default: Optional[bool] = None
 
 

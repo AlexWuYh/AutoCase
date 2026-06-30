@@ -14,6 +14,12 @@ presence_penalty: 0.0
 # JSON 解析失败时的重试配置
 retry_count: 2
 retry_prompt_suffix: "再次提醒：只输出JSON数组，不要包含任何解释或其它文本。"
+# 可选：透传给 API 的额外参数（provider 特定）。
+# 推理模型（如 Qwen3）默认输出思维链会耗尽 max_tokens 导致 JSON 截断，
+# 用以下配置关闭思维链，让模型直接输出 JSON 数组：
+# extra_body:
+#   chat_template_kwargs:
+#     enable_thinking: false
 # 可选：用于工具编排的附加参数
 extra:
   timeout_seconds: 60

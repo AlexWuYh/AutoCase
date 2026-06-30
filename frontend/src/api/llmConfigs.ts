@@ -17,6 +17,7 @@ export interface LLMConfig {
   presence_penalty: number
   retry_count: number
   debug_log: boolean
+  extra_body: Record<string, unknown> | null
   is_default: boolean
   created_at: string
   updated_at: string
@@ -38,6 +39,7 @@ export interface LLMConfigCreate {
   presence_penalty?: number
   retry_count?: number
   debug_log?: boolean
+  extra_body?: Record<string, unknown> | null
   is_default?: boolean
 }
 

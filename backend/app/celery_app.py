@@ -30,3 +30,8 @@ celery_app.conf.update(
     worker_max_tasks_per_child=200,  # recycle worker to avoid memory leaks
     worker_prefetch_multiplier=1,
 )
+
+# Make this the default app so @shared_task instances (e.g. generate_job)
+# bind to our Redis broker in BOTH the web and worker processes. Without
+# this, the web process would publish to Celery's default amqp://localhost.
+celery_app.set_default()

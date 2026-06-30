@@ -112,6 +112,20 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-form-item label="额外参数" prop="extra_body_text">
+          <el-input
+            v-model="form.extra_body_text"
+            type="textarea"
+            :rows="3"
+            placeholder='可选 JSON。推理模型(如 Qwen3)关闭思维链: {"chat_template_kwargs": {"enable_thinking": false}}'
+            class="mono-input"
+          />
+          <div style="margin-top: 4px">
+            <el-button link type="primary" size="small" @click="fillNoThink">
+              填入「禁用思维链」模板
+            </el-button>
+          </div>
+        </el-form-item>
         <el-form-item label="">
           <el-checkbox v-model="form.is_default">设为默认配置</el-checkbox>
           <el-checkbox v-model="form.debug_log" style="margin-left: 16px">调试日志</el-checkbox>
@@ -169,6 +183,7 @@ const defaultForm = () => ({
   presence_penalty: 0.0,
   retry_count: 2,
   debug_log: false,
+  extra_body_text: '',
   is_default: false,
 })
 const form = reactive(defaultForm())
@@ -176,6 +191,19 @@ const form = reactive(defaultForm())
 const rules: FormRules = {
   name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
   model: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
+  extra_body_text: [
+    {
+      validator: (_r: unknown, v: string, cb: (e?: Error) => void) => {
+        if (!v || !v.trim()) return cb()
+        try { JSON.parse(v); cb() } catch { cb(new Error('额外参数必须是合法 JSON')) }
+      },
+      trigger: 'blur',
+    },
+  ],
+}
+
+function fillNoThink() {
+  form.extra_body_text = JSON.stringify({ chat_template_kwargs: { enable_thinking: false } }, null, 2)
 }
 
 const testOpen = ref(false)
@@ -217,6 +245,7 @@ function onEdit(row: LLMConfig) {
     presence_penalty: row.presence_penalty,
     retry_count: row.retry_count,
     debug_log: row.debug_log,
+    extra_body_text: row.extra_body ? JSON.stringify(row.extra_body, null, 2) : '',
     is_default: row.is_default,
   })
   dialogOpen.value = true
@@ -230,10 +259,12 @@ async function onSave() {
   if (!valid) return
   saving.value = true
   try {
+    const { extra_body_text, ...rest } = form
     const payload = {
-      ...form,
+      ...rest,
       api_key_env: form.api_key_env || null,
       base_url: form.base_url || null,
+      extra_body: extra_body_text.trim() ? JSON.parse(extra_body_text) : null,
     }
     if (editing.value) {
       await llmConfigsApi.update(editingId.value, payload)
@@ -276,4 +307,5 @@ onMounted(reload)
 
 <style scoped>
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.mono-input :deep(textarea) { font-family: 'Courier New', monospace; font-size: 13px; }
 </style>

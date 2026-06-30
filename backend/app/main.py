@@ -12,6 +12,11 @@ from .config import get_settings
 from .database import Base, SessionLocal, engine
 from .seed import run_all_seeds
 
+# Import the configured Celery app so @shared_task instances bind to our
+# Redis broker instead of Celery's default (amqp://localhost). Without this,
+# generate_job.delay() in the web process tries to reach RabbitMQ and fails.
+from . import celery_app as _celery_app  # noqa: F401
+
 settings = get_settings()
 logger = logging.getLogger("autocase")
 logging.basicConfig(

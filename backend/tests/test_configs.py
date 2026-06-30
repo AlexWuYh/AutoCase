@@ -22,6 +22,31 @@ def test_create_llm_config(client, admin_user, admin_headers):
     assert body["is_default"] is False
 
 
+def test_llm_config_extra_body_roundtrip(client, admin_user, admin_headers):
+    """extra_body (for reasoning models) is stored and returned intact."""
+    extra = {"chat_template_kwargs": {"enable_thinking": False}}
+    resp = client.post(
+        "/api/v1/llm-configs",
+        json={"name": "Qwen3 no-think", "model": "qwen3", "extra_body": extra},
+        headers=admin_headers,
+    )
+    assert resp.status_code == 201
+    cid = resp.json()["id"]
+    assert resp.json()["extra_body"] == extra
+
+    # Persisted correctly on GET
+    got = client.get(f"/api/v1/llm-configs/{cid}", headers=admin_headers)
+    assert got.json()["extra_body"] == extra
+
+    # Updatable to null
+    upd = client.put(
+        f"/api/v1/llm-configs/{cid}",
+        json={"extra_body": None},
+        headers=admin_headers,
+    )
+    assert upd.json()["extra_body"] is None
+
+
 def test_llm_config_is_default_mutual_exclusion(client, admin_user, admin_headers):
     c1 = client.post(
         "/api/v1/llm-configs",
