@@ -14,7 +14,7 @@ class PageResponse(BaseModel, Generic[T]):
     items: List[T]
     total: int = Field(ge=0)
     page: int = Field(ge=1)
-    page_size: int = Field(ge=1, le=200)
+    page_size: int = Field(ge=1, le=500)
 
 
 class Message(BaseModel):

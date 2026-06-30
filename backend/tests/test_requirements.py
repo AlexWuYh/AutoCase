@@ -239,6 +239,23 @@ def test_requirement_search(client, admin_user, admin_headers):
     assert items[0]["feature"] == "Refund"
 
 
+def test_list_requirements_large_page_size(client, admin_user, admin_headers):
+    """page_size up to 500 must not trip PageResponse schema validation."""
+    r = client.post("/api/v1/requirement-groups", json={"name": "G"}, headers=admin_headers)
+    gid = r.json()["id"]
+    client.post(
+        f"/api/v1/requirement-groups/{gid}/requirements",
+        json={"items": [{"module": "M", "feature": "F", "description": "", "keywords": []}]},
+        headers=admin_headers,
+    )
+    resp = client.get(
+        f"/api/v1/requirement-groups/{gid}/requirements?page_size=500",
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["page_size"] == 500
+
+
 # ─── YAML import / export ──────────────────────────────────────────────
 
 SAMPLE_YAML = """\
