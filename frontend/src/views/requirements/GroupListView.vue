@@ -20,11 +20,11 @@
         <el-button @click="reload">查询</el-button>
       </div>
 
-      <el-table v-loading="loading" :data="rows" stripe>
+      <el-table v-loading="loading" :data="rows" stripe row-key="id" highlight-current-row style="cursor: pointer" @row-click="onRowClick">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="名称">
           <template #default="{ row }">
-            <el-button link type="primary" @click="onEnter(row)">{{ row.name }}</el-button>
+            <el-button link type="primary" @click.stop="onEnter(row)">{{ row.name }}</el-button>
           </template>
         </el-table-column>
         <el-table-column prop="description" label="描述" show-overflow-tooltip />
@@ -35,8 +35,8 @@
         </el-table-column>
         <el-table-column label="操作" width="180">
           <template #default="{ row }">
-            <el-button size="small" @click="onEdit(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="onDelete(row)">删除</el-button>
+            <el-button size="small" @click.stop="onEdit(row)">编辑</el-button>
+            <el-button size="small" type="danger" @click.stop="onDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -118,6 +118,10 @@ async function reload() {
 }
 
 function onEnter(row: RequirementGroup) {
+  router.push(`/requirement-groups/${row.id}`)
+}
+
+function onRowClick(row: RequirementGroup) {
   router.push(`/requirement-groups/${row.id}`)
 }
 

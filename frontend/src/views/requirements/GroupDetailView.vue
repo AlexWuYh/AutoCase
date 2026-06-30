@@ -10,7 +10,8 @@
       <template #extra>
         <el-button :icon="Download" @click="onExportYaml">导出 YAML</el-button>
         <el-button :icon="UploadFilled" type="warning" @click="importOpen = true">导入 YAML</el-button>
-        <el-button :icon="Plus" type="primary" @click="onBatchAdd">批量添加</el-button>
+        <el-button :icon="Plus" @click="onBatchAdd">批量添加</el-button>
+        <el-button :icon="Plus" type="primary" @click="onCreate">新增功能点</el-button>
       </template>
     </el-page-header>
 
@@ -33,6 +34,20 @@
       </div>
 
       <el-table v-loading="loading" :data="rows" stripe empty-text="暂无功能点">
+        <el-table-column type="expand">
+          <template #default="{ row }">
+            <div class="req-detail">
+              <p><b>所属模块：</b>{{ row.module }}</p>
+              <p><b>功能名称：</b>{{ row.feature }}</p>
+              <p><b>描述：</b>{{ row.description || '无' }}</p>
+              <p>
+                <b>关键词：</b>
+                <el-tag v-for="kw in row.keywords" :key="kw" size="small" style="margin-right: 4px">{{ kw }}</el-tag>
+                <span v-if="!row.keywords?.length" style="color: #909399">无</span>
+              </p>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column type="index" label="#" width="50" />
         <el-table-column prop="module" label="所属模块" min-width="140" show-overflow-tooltip />
         <el-table-column prop="feature" label="功能名称" min-width="160" show-overflow-tooltip />
@@ -67,7 +82,7 @@
       />
     </el-card>
 
-    <RequirementFormDialog v-model="formOpen" :requirement="editingReq" @saved="reload" />
+    <RequirementFormDialog v-model="formOpen" :requirement="editingReq" :group-id="groupId" @saved="onAfterSave" />
 
     <RequirementImportDialog
       v-if="groupId"
@@ -77,7 +92,7 @@
     />
 
     <el-dialog v-model="batchOpen" title="批量添加功能点" width="700px" @close="onBatchClose">
-      <el-form ref="batchFormRef" :model="batchForm" :rules="batchRules" label-width="80px">
+      <el-form ref="batchFormRef" :model="batchForm" label-width="80px">
         <el-form-item
           v-for="(item, idx) in batchForm.items"
           :key="idx"
@@ -86,16 +101,17 @@
           :rules="[{ required: true, message: '请输入模块', trigger: 'blur' }]"
         >
           <div class="batch-row">
-            <el-input v-model="item.module" placeholder="所属模块" style="width: 180px" />
-            <el-input v-model="item.feature" placeholder="功能名称" style="width: 180px" />
+            <el-input v-model="item.module" placeholder="所属模块" style="width: 160px" />
+            <el-input v-model="item.feature" placeholder="功能名称" style="width: 160px" />
             <el-input v-model="item.description" placeholder="描述" style="flex: 1" />
+            <el-input v-model="item.keywords" placeholder="关键词(逗号分隔)" style="width: 150px" />
             <el-button type="danger" :icon="Close" circle size="small" @click="onRemoveItem(idx)" />
           </div>
         </el-form-item>
       </el-form>
       <div style="margin-bottom: 12px">
-        <el-button :icon="Plus" @click="onAddItem">添加一行</el-button>
-        <el-button :icon="Plus" @click="onAddItem; onAddItem">添加两行</el-button>
+        <el-button :icon="Plus" @click="onAddItems(1)">添加一行</el-button>
+        <el-button :icon="Plus" @click="onAddItems(5)">添加五行</el-button>
       </div>
       <div class="batch-footer">
         <el-radio-group v-model="batchMode">
@@ -134,7 +150,7 @@ const page = ref(1)
 const pageSize = ref(50)
 const search = ref('')
 
-// Edit single
+// Edit / create single
 const formOpen = ref(false)
 const editingReq = ref<Requirement | null>(null)
 
@@ -146,12 +162,10 @@ const batchOpen = ref(false)
 const batchMode = ref<'append' | 'replace'>('append')
 const savingBatch = ref(false)
 const batchFormRef = ref<FormInstance>()
+type BatchItem = { module: string; feature: string; description: string; keywords: string }
 const batchForm = reactive({
-  items: [{ module: '', feature: '', description: '' }] as { module: string; feature: string; description: string }[],
+  items: [{ module: '', feature: '', description: '', keywords: '' }] as BatchItem[],
 })
-const batchRules = {
-  // rules added per-item inline
-}
 
 async function fetchGroup() {
   try {
@@ -179,6 +193,16 @@ async function reload() {
   } finally {
     loading.value = false
   }
+}
+
+function onCreate() {
+  editingReq.value = null
+  formOpen.value = true
+}
+
+async function onAfterSave() {
+  await fetchGroup()  // refresh requirement_count in header
+  reload()
 }
 
 function onEdit(row: Requirement) {
@@ -216,13 +240,15 @@ async function onExportYaml() {
 // ─── Batch add ──────────────────────────────────────────────────────────
 
 function onBatchAdd() {
-  batchForm.items = [{ module: '', feature: '', description: '' }]
+  batchForm.items = [{ module: '', feature: '', description: '', keywords: '' }]
   batchMode.value = 'append'
   batchOpen.value = true
 }
 
-function onAddItem() {
-  batchForm.items.push({ module: '', feature: '', description: '' })
+function onAddItems(n = 1) {
+  for (let i = 0; i < n; i++) {
+    batchForm.items.push({ module: '', feature: '', description: '', keywords: '' })
+  }
 }
 
 function onRemoveItem(idx: number) {
@@ -232,6 +258,10 @@ function onRemoveItem(idx: number) {
 
 function onBatchClose() {
   batchFormRef.value?.resetFields()
+}
+
+function splitKeywords(text: string): string[] {
+  return text.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
 }
 
 async function onSaveBatch() {
@@ -249,7 +279,7 @@ async function onSaveBatch() {
         module: it.module,
         feature: it.feature || it.module,
         description: it.description,
-        keywords: [],
+        keywords: splitKeywords(it.keywords),
       })),
       batchMode.value,
     )
@@ -276,4 +306,6 @@ onMounted(async () => {
 .filters { display: flex; gap: 8px; margin-bottom: 16px; }
 .batch-row { display: flex; gap: 6px; align-items: center; }
 .batch-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.req-detail { padding: 8px 24px; line-height: 1.9; }
+.req-detail p { margin: 0; }
 </style>

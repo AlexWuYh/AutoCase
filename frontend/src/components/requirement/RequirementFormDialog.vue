@@ -48,6 +48,7 @@ import { requirementsApi, type Requirement } from '@/api/requirements'
 interface Props {
   modelValue: boolean
   requirement: Requirement | null
+  groupId: number
 }
 
 const props = defineProps<Props>()
@@ -115,9 +116,18 @@ async function onSave() {
       })
       ElMessage.success('已更新')
     } else {
-      ElMessage.success('已保存')
-      // Single create is not supported by backend directly; emit to parent
-      // Parent will handle via batch create or update pattern
+      // 新建：通过 batchCreate 以 append 模式真实写入一条需求
+      await requirementsApi.batchCreate(
+        props.groupId,
+        [{
+          module: form.module,
+          feature: form.feature,
+          description: form.description,
+          keywords: form.keywords,
+        }],
+        'append',
+      )
+      ElMessage.success('已新增')
     }
     emit('saved')
     visible.value = false
