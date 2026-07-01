@@ -98,12 +98,12 @@ async function onSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
 }
 .login-card { width: 420px; }
 .login-header { text-align: center; }
-.login-header h2 { margin: 0 0 8px; color: #303133; }
-.login-header p { margin: 0; color: #909399; font-size: 13px; }
-.login-tips { text-align: center; color: #909399; font-size: 12px; margin-top: 12px; }
-.login-tips code { background: #f5f7fa; padding: 1px 6px; border-radius: 3px; }
+.login-header h2 { margin: 0 0 8px; color: #1f2933; }
+.login-header p { margin: 0; color: #6b7684; font-size: 13px; }
+.login-tips { text-align: center; color: #6b7684; font-size: 12px; margin-top: 12px; }
+.login-tips code { background: #f2fbf8; color: #0d9668; padding: 1px 6px; border-radius: 4px; }
 </style>

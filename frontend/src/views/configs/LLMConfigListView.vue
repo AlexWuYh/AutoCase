@@ -50,23 +50,31 @@
     <el-dialog
       v-model="dialogOpen"
       :title="editing ? '编辑 LLM 配置' : '新建 LLM 配置'"
-      width="560px"
+      width="680px"
+      top="6vh"
       @close="onClose"
     >
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="110px" @submit.prevent>
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="form.name" />
-        </el-form-item>
-        <el-form-item label="模型" prop="model">
-          <el-input v-model="form.model" placeholder="如 gpt-4o-mini, Qwen2.5-7B" />
-        </el-form-item>
-        <el-row :gutter="12">
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
+        <el-divider content-position="left">基础信息</el-divider>
+        <el-row :gutter="20">
           <el-col :span="12">
+            <el-form-item label="配置名称" prop="name">
+              <el-input v-model="form.name" placeholder="给这个配置起个名字" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="模型" prop="model">
+              <el-input v-model="form.model" placeholder="如 gpt-4o-mini, Qwen2.5-7B" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="14">
             <el-form-item label="BASE URL" prop="base_url">
               <el-input v-model="form.base_url" placeholder="如 http://127.0.0.1:8000/v1" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="10">
             <el-form-item label="API 模式" prop="api_mode">
               <el-select v-model="form.api_mode" style="width: 100%">
                 <el-option label="Chat Completions" value="chat_completions" />
@@ -75,7 +83,12 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row :gutter="12">
+        <el-form-item label="API Key 环境变量">
+          <el-input v-model="form.api_key_env" placeholder="如 OPENAI_API_KEY，留空则不验证" />
+        </el-form-item>
+
+        <el-divider content-position="left">采样参数</el-divider>
+        <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="Temperature">
               <el-input-number v-model="form.temperature" :min="0" :max="2" :step="0.1" controls-position="right" style="width: 100%" />
@@ -92,43 +105,42 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="API Key 环境变量">
-          <el-input v-model="form.api_key_env" placeholder="如 OPENAI_API_KEY，留空则不验证" />
-        </el-form-item>
-        <el-row :gutter="12">
+        <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="重试次数">
-              <el-input-number v-model="form.retry_count" :min="0" :max="10" style="width: 100%" />
+              <el-input-number v-model="form.retry_count" :min="0" :max="10" controls-position="right" style="width: 100%" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="启用">
+            <el-form-item label="启用配置">
               <el-switch v-model="form.enabled" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="空 Key 允许">
+            <el-form-item label="允许空 Key">
               <el-switch v-model="form.allow_empty_key" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="额外参数" prop="extra_body_text">
+
+        <el-divider content-position="left">高级</el-divider>
+        <el-form-item label="额外参数 (extra_body)" prop="extra_body_text">
           <el-input
             v-model="form.extra_body_text"
             type="textarea"
-            :rows="3"
+            :rows="4"
             placeholder='可选 JSON。推理模型(如 Qwen3)关闭思维链: {"chat_template_kwargs": {"enable_thinking": false}}'
             class="mono-input"
           />
-          <div style="margin-top: 4px">
+          <div style="margin-top: 6px">
             <el-button link type="primary" size="small" @click="fillNoThink">
               填入「禁用思维链」模板
             </el-button>
           </div>
         </el-form-item>
-        <el-form-item label="">
+        <el-form-item>
           <el-checkbox v-model="form.is_default">设为默认配置</el-checkbox>
-          <el-checkbox v-model="form.debug_log" style="margin-left: 16px">调试日志</el-checkbox>
+          <el-checkbox v-model="form.debug_log" style="margin-left: 24px">调试日志</el-checkbox>
         </el-form-item>
       </el-form>
       <template #footer>

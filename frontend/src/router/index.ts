@@ -59,7 +59,7 @@ const routes: RouteRecordRaw[] = [
         path: 'jobs',
         name: 'jobs',
         component: () => import('@/views/JobListView.vue'),
-        meta: { title: '生成任务' },
+        meta: { title: '自动用例生成' },
       },
       // Feature routes will be added in later phases.
     ],
@@ -75,6 +75,16 @@ const router = createRouter({
   routes,
 })
 
+function roleFromToken(): string | null {
+  const raw = localStorage.getItem('access_token')
+  if (!raw) return null
+  try {
+    return JSON.parse(atob(raw.split('.')[1])).role ?? null
+  } catch {
+    return null
+  }
+}
+
 // Auth + role guard
 router.beforeEach((to) => {
   const auth = useAuthStore()
@@ -84,8 +94,12 @@ router.beforeEach((to) => {
   if (to.name === 'login' && auth.isAuthenticated) {
     return { name: 'dashboard' }
   }
-  if (to.meta.requiresAdmin && !auth.isAdmin) {
-    return { name: 'dashboard' }
+  // On a fresh page load the store user isn't fetched yet, so fall back to
+  // the role encoded in the JWT to avoid wrongly bouncing admins off
+  // admin-only routes.
+  if (to.meta.requiresAdmin) {
+    const isAdmin = auth.user?.role === 'admin' || roleFromToken() === 'admin'
+    if (!isAdmin) return { name: 'dashboard' }
   }
 })
 

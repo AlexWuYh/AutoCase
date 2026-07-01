@@ -9,9 +9,10 @@
       </template>
       <template #extra>
         <el-button :icon="Download" @click="onExportYaml">导出 YAML</el-button>
-        <el-button :icon="UploadFilled" type="warning" @click="importOpen = true">导入 YAML</el-button>
+        <el-button :icon="UploadFilled" @click="importOpen = true">导入 YAML</el-button>
         <el-button :icon="Plus" @click="onBatchAdd">批量添加</el-button>
-        <el-button :icon="Plus" type="primary" @click="onCreate">新增功能点</el-button>
+        <el-button :icon="Plus" @click="onCreate">新增功能点</el-button>
+        <el-button :icon="MagicStick" type="primary" @click="genOpen = true">自动生成用例</el-button>
       </template>
     </el-page-header>
 
@@ -124,6 +125,8 @@
         </div>
       </div>
     </el-dialog>
+
+    <JobCreateDialog v-model="genOpen" :preset-group-id="groupId" @created="onGenerated" />
   </div>
 </template>
 
@@ -132,11 +135,12 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus'
 import {
-  Plus, Search, Edit, Delete, Download, UploadFilled, Close,
+  Plus, Search, Edit, Delete, Download, UploadFilled, Close, MagicStick,
 } from '@element-plus/icons-vue'
 import { requirementsApi, type Requirement, type RequirementGroup } from '@/api/requirements'
 import RequirementFormDialog from '@/components/requirement/RequirementFormDialog.vue'
 import RequirementImportDialog from '@/components/requirement/RequirementImportDialog.vue'
+import JobCreateDialog from '@/components/job/JobCreateDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -153,6 +157,9 @@ const search = ref('')
 // Edit / create single
 const formOpen = ref(false)
 const editingReq = ref<Requirement | null>(null)
+
+// Auto-generation dialog
+const genOpen = ref(false)
 
 // Import
 const importOpen = ref(false)
@@ -198,6 +205,19 @@ async function reload() {
 function onCreate() {
   editingReq.value = null
   formOpen.value = true
+}
+
+async function onGenerated() {
+  try {
+    await ElMessageBox.confirm('生成任务已创建，是否前往「自动用例生成」查看进度？', '任务已创建', {
+      confirmButtonText: '查看任务',
+      cancelButtonText: '留在本页',
+      type: 'success',
+    })
+    router.push('/jobs')
+  } catch {
+    /* stay */
+  }
 }
 
 async function onAfterSave() {

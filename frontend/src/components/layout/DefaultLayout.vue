@@ -1,12 +1,13 @@
 <template>
   <el-container class="layout">
-    <el-aside width="220px" class="sidebar">
-      <div class="logo">AutoCase</div>
+    <el-aside width="228px" class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">AC</div>
+        <div class="brand-name">AutoCase</div>
+      </div>
       <el-menu
         :default-active="activeMenu"
-        background-color="#001529"
-        text-color="rgba(255,255,255,0.85)"
-        active-text-color="#ffffff"
+        class="side-menu"
         @select="onMenuSelect"
       >
         <el-menu-item index="/dashboard">
@@ -18,8 +19,8 @@
           <span>需求集</span>
         </el-menu-item>
         <el-menu-item index="/jobs">
-          <el-icon><Timer /></el-icon>
-          <span>生成任务</span>
+          <el-icon><MagicStick /></el-icon>
+          <span>自动用例生成</span>
         </el-menu-item>
         <el-menu-item v-if="isAdmin" index="/llm-configs">
           <el-icon><Setting /></el-icon>
@@ -40,15 +41,9 @@
         <div class="header-title">{{ pageTitle }}</div>
         <el-dropdown @command="onCommand">
           <span class="user-trigger">
-            <el-icon><UserFilled /></el-icon>
-            {{ auth.user?.username || '加载中...' }}
-            <el-tag
-              v-if="isAdmin"
-              size="small"
-              type="danger"
-              effect="dark"
-              style="margin-left: 4px"
-            >管理员</el-tag>
+            <span class="avatar">{{ (auth.user?.username || 'U')[0].toUpperCase() }}</span>
+            <span class="uname">{{ auth.user?.username || '加载中...' }}</span>
+            <el-tag v-if="isAdmin" size="small" type="success" effect="light" round>管理员</el-tag>
             <el-icon><ArrowDown /></el-icon>
           </span>
           <template #dropdown>
@@ -76,8 +71,6 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const activeMenu = computed(() => {
-  // Highlight the nearest parent route so sub-pages like
-  // /requirement-groups/3 still highlight "需求集"
   if (route.path.startsWith('/requirement-groups')) return '/requirement-groups'
   if (route.path.startsWith('/jobs')) return '/jobs'
   return route.path
@@ -85,16 +78,12 @@ const activeMenu = computed(() => {
 
 const pageTitle = computed(() => (route.meta.title as string) || 'AutoCase')
 
-// Use decoded JWT role for instant admin detection (avoids flash on page
-// refresh while /auth/me is still loading).
 const isAdmin = computed(() => {
   if (auth.user?.role === 'admin') return true
-  // fallback: decode token payload without API call
   const raw = localStorage.getItem('access_token')
   if (!raw) return false
   try {
-    const payload = JSON.parse(atob(raw.split('.')[1]))
-    return payload.role === 'admin'
+    return JSON.parse(atob(raw.split('.')[1])).role === 'admin'
   } catch {
     return false
   }
@@ -122,30 +111,87 @@ onMounted(() => {
 
 <style scoped>
 .layout { height: 100vh; }
-.sidebar { background: #001529; }
-.logo {
-  color: #fff;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 20px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+
+.sidebar {
+  background: #ffffff;
+  border-right: 1px solid var(--ac-border, #eaecef);
+  display: flex;
+  flex-direction: column;
 }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--ac-border, #eaecef);
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+.brand-name { font-size: 18px; font-weight: 700; color: #1f2933; }
+
+.side-menu {
+  border-right: none;
+  padding: 10px 12px;
+  flex: 1;
+}
+.side-menu :deep(.el-menu-item) {
+  height: 44px;
+  line-height: 44px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  color: #4b5563;
+  font-weight: 500;
+}
+.side-menu :deep(.el-menu-item:hover) {
+  background: var(--el-color-primary-light-9, #f2fbf8);
+  color: var(--el-color-primary, #10b981);
+}
+.side-menu :deep(.el-menu-item.is-active) {
+  background: var(--el-color-primary-light-9, #e9f8f3);
+  color: var(--el-color-primary-dark-2, #0d9668);
+  font-weight: 600;
+}
+
 .header {
-  background: #fff;
-  border-bottom: 1px solid #ebeef5;
+  background: #ffffff;
+  border-bottom: 1px solid var(--ac-border, #eaecef);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
 }
-.header-title { font-size: 16px; font-weight: 600; }
+.header-title { font-size: 17px; font-weight: 600; color: #1f2933; }
 .user-trigger {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   color: #303133;
 }
-.main { background: #f5f7fa; padding: 24px; }
-:deep(.el-menu) { border-right: none; }
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.uname { font-weight: 500; }
+.main { background: var(--ac-bg, #f6f8fa); padding: 24px; overflow-y: auto; }
 </style>

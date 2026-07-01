@@ -52,7 +52,13 @@ export const jobsApi = {
   listCases(jobId: number, params: { page?: number; page_size?: number } = {}) {
     return request.get<Page<TestCase>>(`/jobs/${jobId}/cases`, { params })
   },
-  exportUrl(jobId: number, format: 'xlsx' | 'csv' = 'xlsx') {
-    return `${request.defaults.baseURL}/jobs/${jobId}/export?format=${format}`
+  // Download via axios (blob) so the JWT is sent in the Authorization header.
+  // The previous window.open(?token=) approach failed with 401 because the
+  // backend only reads the token from the header, not a query param.
+  exportBlob(jobId: number, format: 'xlsx' | 'csv' = 'xlsx') {
+    return request.get(`/jobs/${jobId}/export`, {
+      params: { format },
+      responseType: 'blob',
+    })
   },
 }
