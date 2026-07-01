@@ -34,6 +34,18 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       sourcemap: false,
       chunkSizeWarningLimit: 1024,
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            if (id.includes('/views/requirements/')) return 'views-requirements'
+            if (id.includes('/views/configs/')) return 'views-configs'
+            if (id.includes('/views/JobListView')) return 'views-jobs'
+            if (id.includes('/views/UserListView')) return 'views-users'
+            if (id.includes('/components/requirement/')) return 'comps-requirement'
+            if (id.includes('element-plus')) return 'vendor-el'
+          },
+        },
+      },
     },
   }
 })

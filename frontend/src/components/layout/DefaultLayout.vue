@@ -4,10 +4,10 @@
       <div class="logo">AutoCase</div>
       <el-menu
         :default-active="activeMenu"
-        router
         background-color="#001529"
         text-color="rgba(255,255,255,0.85)"
         active-text-color="#ffffff"
+        @select="onMenuSelect"
       >
         <el-menu-item index="/dashboard">
           <el-icon><DataLine /></el-icon>
@@ -21,19 +21,18 @@
           <el-icon><Timer /></el-icon>
           <span>生成任务</span>
         </el-menu-item>
-        <el-menu-item v-if="auth.isAdmin" index="/llm-configs">
+        <el-menu-item v-if="isAdmin" index="/llm-configs">
           <el-icon><Setting /></el-icon>
           <span>LLM 配置</span>
         </el-menu-item>
-        <el-menu-item v-if="auth.isAdmin" index="/prompts">
+        <el-menu-item v-if="isAdmin" index="/prompts">
           <el-icon><EditPen /></el-icon>
           <span>Prompt 模板</span>
         </el-menu-item>
-        <el-menu-item v-if="auth.isAdmin" index="/users">
+        <el-menu-item v-if="isAdmin" index="/users">
           <el-icon><User /></el-icon>
           <span>用户管理</span>
         </el-menu-item>
-        <!-- Additional menu items will be added in later phases -->
       </el-menu>
     </el-aside>
     <el-container>
@@ -42,9 +41,9 @@
         <el-dropdown @command="onCommand">
           <span class="user-trigger">
             <el-icon><UserFilled /></el-icon>
-            {{ auth.user?.username || '用户' }}
+            {{ auth.user?.username || '加载中...' }}
             <el-tag
-              v-if="auth.isAdmin"
+              v-if="isAdmin"
               size="small"
               type="danger"
               effect="dark"
@@ -54,7 +53,7 @@
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="router.push('/profile')">个人中心</el-dropdown-item>
+              <el-dropdown-item command="profile">个人中心</el-dropdown-item>
               <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -76,18 +75,45 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
-const activeMenu = computed(() => route.path)
+const activeMenu = computed(() => {
+  // Highlight the nearest parent route so sub-pages like
+  // /requirement-groups/3 still highlight "需求集"
+  if (route.path.startsWith('/requirement-groups')) return '/requirement-groups'
+  if (route.path.startsWith('/jobs')) return '/jobs'
+  return route.path
+})
+
 const pageTitle = computed(() => (route.meta.title as string) || 'AutoCase')
+
+// Use decoded JWT role for instant admin detection (avoids flash on page
+// refresh while /auth/me is still loading).
+const isAdmin = computed(() => {
+  if (auth.user?.role === 'admin') return true
+  // fallback: decode token payload without API call
+  const raw = localStorage.getItem('access_token')
+  if (!raw) return false
+  try {
+    const payload = JSON.parse(atob(raw.split('.')[1]))
+    return payload.role === 'admin'
+  } catch {
+    return false
+  }
+})
 
 function onCommand(cmd: string) {
   if (cmd === 'logout') {
     auth.logout()
     router.push('/login')
+  } else if (cmd === 'profile') {
+    router.push('/profile')
   }
 }
 
+function onMenuSelect(index: string) {
+  router.push(index)
+}
+
 onMounted(() => {
-  // Refetch profile in case token is valid but user info is missing
   if (auth.isAuthenticated && !auth.user) {
     auth.fetchMe().catch(() => auth.logout())
   }
