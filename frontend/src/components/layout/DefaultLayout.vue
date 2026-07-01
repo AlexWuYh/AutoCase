@@ -22,6 +22,10 @@
           <el-icon><MagicStick /></el-icon>
           <span>自动用例生成</span>
         </el-menu-item>
+        <el-menu-item index="/api-keys">
+          <el-icon><Key /></el-icon>
+          <span>API 密钥</span>
+        </el-menu-item>
         <el-menu-item v-if="isAdmin" index="/llm-configs">
           <el-icon><Setting /></el-icon>
           <span>LLM 配置</span>

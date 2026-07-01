@@ -1,5 +1,6 @@
 """ORM models package — import here so Alembic / Base.metadata see all tables."""
 from .base import Base  # noqa: F401
+from .api_key import ApiKey  # noqa: F401
 from .case import GeneratedCase  # noqa: F401
 from .job import GenerationJob  # noqa: F401
 from .llm_config import LLMConfig  # noqa: F401

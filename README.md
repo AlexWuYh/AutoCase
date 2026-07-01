@@ -57,12 +57,12 @@ docker compose up -d --build
 - Redis: `localhost:6379`
 
 **Web 平台功能（按交付阶段）**
-- 阶段 1（已完成）：基础设施、Docker 部署、登录页骨架
-- 阶段 2：JWT 认证、用户管理
-- 阶段 3：需求集 + 功能点 CRUD + YAML 导入导出
-- 阶段 4：LLM 配置 + Prompt 模板管理
-- 阶段 5：异步生成任务（Celery）
-- 阶段 6：Excel/CSV 导出 + 测试 + 文档
+- 基础设施、Docker 部署
+- JWT 认证、用户管理
+- 需求集 + 功能点 CRUD + YAML 导入导出
+- LLM 配置 + Prompt 模板管理
+- 自动用例生成（Celery）+ Excel/CSV 导出
+- 第三方 API（API 密钥 + Open API）
 
 **本地开发（不用 Docker）**
 
@@ -83,6 +83,61 @@ cd frontend
 npm install
 npm run dev   # http://localhost:5173
 ```
+
+## 第三方 API 调用（飞书 / 微信机器人等）
+
+平台提供 Open API，支持外部工具用 **API 密钥** 免登录调用生成接口。
+
+**1. 创建密钥**：登录 Web 界面 → 「API 密钥」→ 新建 → 复制一次性明文密钥（形如 `ac_xxxx`）。
+
+**2. 调用方式**：请求头带 `X-API-Key: <你的密钥>`。
+
+同步生成（传结构化 cases，少量需求，直接返回用例）：
+```bash
+curl -X POST http://localhost:8000/api/v1/open/generate \
+  -H "X-API-Key: ac_你的密钥" \
+  -H "Content-Type: application/json" \
+  -d '{"cases":[{"module":"登录","feature":"登录成功","description":"正常登录","keywords":["登录"]}]}'
+```
+
+同步生成（传 YAML 文本，与 CLI 输入格式一致）：
+```bash
+curl -X POST http://localhost:8000/api/v1/open/generate \
+  -H "X-API-Key: ac_你的密钥" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"cases:\n  - module: 告警\n    feature: 区域入侵\n    description: 检测入侵\n    keywords: [告警]"}'
+```
+
+同步生成（上传 YAML 文件）：
+```bash
+curl -X POST http://localhost:8000/api/v1/open/generate-file \
+  -H "X-API-Key: ac_你的密钥" \
+  -F "file=@inputs/input.example.yaml"
+```
+
+异步生成（大批量，返回 job_id 后轮询）：
+```bash
+# 提交
+curl -X POST http://localhost:8000/api/v1/open/generate-async \
+  -H "X-API-Key: ac_你的密钥" -H "Content-Type: application/json" \
+  -d '{"text":"cases:\n  - module: M\n    feature: F\n    description: D"}'
+# -> {"job_id": 12, "status": "pending", ...}
+
+# 轮询结果
+curl http://localhost:8000/api/v1/open/jobs/12 -H "X-API-Key: ac_你的密钥"
+```
+
+说明：
+- 同步接口最多 20 条需求，超过请用异步接口。
+- 通过 API 生成的用例会**落库**（自动建临时需求集），可在 Web 界面查看和导出。
+- 完整接口文档见 Swagger：`http://localhost:8000/api/docs`（`open-api` 分组）。
+
+**Web 平台功能**
+- JWT 认证、用户管理（管理员）
+- 需求集 + 功能点 CRUD、YAML 导入导出、单条/批量录入、保存并生成
+- LLM 配置 + Prompt 模板管理（支持推理模型关闭思维链）
+- 自动用例生成（Celery 异步 + 实时进度）、Excel/CSV 导出
+- 第三方 API（API 密钥 + 同步/异步生成接口）
 
 **安装部署**
 

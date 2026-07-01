@@ -33,8 +33,9 @@
         <el-table-column prop="created_at" label="创建时间" width="180">
           <template #default="{ row }">{{ formatDate(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column label="操作" width="240">
           <template #default="{ row }">
+            <el-button size="small" type="primary" @click.stop="onGenerate(row)">生成</el-button>
             <el-button size="small" @click.stop="onEdit(row)">编辑</el-button>
             <el-button size="small" type="danger" @click.stop="onDelete(row)">删除</el-button>
           </template>
@@ -72,6 +73,8 @@
         <el-button type="primary" :loading="saving" @click="onSave">保存</el-button>
       </template>
     </el-dialog>
+
+    <JobCreateDialog v-model="genOpen" :preset-group-id="genGroupId" @created="onGenerated" />
   </div>
 </template>
 
@@ -81,6 +84,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
 import { requirementsApi, type RequirementGroup } from '@/api/requirements'
+import JobCreateDialog from '@/components/job/JobCreateDialog.vue'
 
 const router = useRouter()
 const loading = ref(false)
@@ -96,8 +100,34 @@ const formRef = ref<FormInstance>()
 const saving = ref(false)
 const form = reactive({ name: '', description: '' })
 
+// Quick-generate dialog
+const genOpen = ref(false)
+const genGroupId = ref<number | null>(null)
+
 const rules: FormRules = {
   name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+}
+
+function onGenerate(row: RequirementGroup) {
+  if (row.requirement_count === 0) {
+    ElMessage.warning('该需求集暂无功能点，请先添加需求')
+    return
+  }
+  genGroupId.value = row.id
+  genOpen.value = true
+}
+
+async function onGenerated() {
+  try {
+    await ElMessageBox.confirm('生成任务已创建，是否前往「自动用例生成」查看进度？', '任务已创建', {
+      confirmButtonText: '查看任务',
+      cancelButtonText: '留在本页',
+      type: 'success',
+    })
+    router.push('/jobs')
+  } catch {
+    /* stay */
+  }
 }
 
 async function reload() {

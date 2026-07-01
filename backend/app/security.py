@@ -1,9 +1,10 @@
 """Password hashing and JWT token utilities."""
 from __future__ import annotations
 
+import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Literal, Optional, Tuple
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -29,6 +30,28 @@ def verify_password(plain: str, hashed: str) -> bool:
         return pwd_context.verify(plain, hashed)
     except Exception:
         return False
+
+
+# ─── API keys ──────────────────────────────────────────────────────────────
+
+API_KEY_PREFIX = "ac_"
+
+
+def generate_api_key() -> Tuple[str, str, str]:
+    """Create a new API key.
+
+    Returns (plaintext, sha256_hash, display_prefix). Only the hash is stored;
+    the plaintext is returned to the caller exactly once.
+    """
+    plaintext = API_KEY_PREFIX + secrets.token_urlsafe(32)
+    key_hash = hash_api_key(plaintext)
+    prefix = plaintext[:10]
+    return plaintext, key_hash, prefix
+
+
+def hash_api_key(plaintext: str) -> str:
+    """Deterministic sha256 hash used to look up an API key."""
+    return hashlib.sha256(plaintext.encode("utf-8")).hexdigest()
 
 
 # ─── JWT ─────────────────────────────────────────────────────────────────

@@ -35,7 +35,9 @@
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
-      <el-button type="primary" :loading="saving" @click="onSave">保存</el-button>
+      <el-button :loading="saving" @click="onSave(false)">保存</el-button>
+      <el-button v-if="!editing" type="primary" :loading="saving" @click="onSave(true)">保存并生成</el-button>
+      <el-button v-else type="primary" :loading="saving" @click="onSave(false)">保存</el-button>
     </template>
   </el-dialog>
 </template>
@@ -54,7 +56,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<{
   (e: 'update:modelValue', v: boolean): void
-  (e: 'saved'): void
+  (e: 'saved', payload?: { thenGenerate: boolean }): void
 }>()
 
 const visible = computed({
@@ -101,7 +103,7 @@ function onClose() {
   formRef.value?.resetFields()
 }
 
-async function onSave() {
+async function onSave(thenGenerate = false) {
   if (!formRef.value) return
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
@@ -129,7 +131,7 @@ async function onSave() {
       )
       ElMessage.success('已新增')
     }
-    emit('saved')
+    emit('saved', { thenGenerate })
     visible.value = false
   } catch (e: unknown) {
     const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail

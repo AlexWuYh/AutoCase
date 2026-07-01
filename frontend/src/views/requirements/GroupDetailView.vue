@@ -121,7 +121,8 @@
         </el-radio-group>
         <div>
           <el-button @click="batchOpen = false">取消</el-button>
-          <el-button type="primary" :loading="savingBatch" @click="onSaveBatch">保存</el-button>
+          <el-button :loading="savingBatch" @click="onSaveBatch(false)">保存</el-button>
+          <el-button type="primary" :loading="savingBatch" @click="onSaveBatch(true)">保存并生成</el-button>
         </div>
       </div>
     </el-dialog>
@@ -220,9 +221,10 @@ async function onGenerated() {
   }
 }
 
-async function onAfterSave() {
+async function onAfterSave(payload?: { thenGenerate: boolean }) {
   await fetchGroup()  // refresh requirement_count in header
   reload()
+  if (payload?.thenGenerate) genOpen.value = true
 }
 
 function onEdit(row: Requirement) {
@@ -284,7 +286,7 @@ function splitKeywords(text: string): string[] {
   return text.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
 }
 
-async function onSaveBatch() {
+async function onSaveBatch(thenGenerate = false) {
   savingBatch.value = true
   try {
     const items = batchForm.items.filter((it) => it.module.trim())
@@ -305,7 +307,9 @@ async function onSaveBatch() {
     )
     ElMessage.success(`已添加 ${items.length} 条功能点`)
     batchOpen.value = false
+    await fetchGroup()
     reload()
+    if (thenGenerate) genOpen.value = true
   } catch (e: unknown) {
     const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail
     ElMessage.error(msg || '保存失败')

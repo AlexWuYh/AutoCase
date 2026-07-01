@@ -61,6 +61,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/JobListView.vue'),
         meta: { title: '自动用例生成' },
       },
+      {
+        path: 'api-keys',
+        name: 'api-keys',
+        component: () => import('@/views/ApiKeyView.vue'),
+        meta: { title: 'API 密钥' },
+      },
       // Feature routes will be added in later phases.
     ],
   },
